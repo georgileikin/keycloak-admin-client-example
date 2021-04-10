@@ -2,15 +2,11 @@ package org.leikin;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.admin.client.resource.ClientsResource;
-import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.UsersResource;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.admin.client.resource.*;
+import org.keycloak.representations.idm.*;
 
 import java.util.Collections;
+import java.util.List;
 
 public class KeycloakAdminClientExample {
 
@@ -23,13 +19,13 @@ public class KeycloakAdminClientExample {
         String kcAdminClientID = "admin-cli";
 
         String newRealmName = "Demo";
-        String newClientName = "app-client";
-        String newRoleName = "read-permission";
+        String newClientName = "demo-client";
+        String newRoleName = "demo-permission";
         String newUsername = "georgi";
         String newUserFirstName = "Georgi";
-        String newUserLastName = "Leikin";
+        String newUserLastName = "Demo";
         String newUserPassword = "admin";
-        String newUserEmail = "user@email.com";
+        String newUserEmail = "demo@useremail.com";
 
         Keycloak keycloak = KeycloakBuilder.builder()
                 .serverUrl(kcServerUrl)
@@ -78,6 +74,23 @@ public class KeycloakAdminClientExample {
         userRepresentation.setEnabled(true);
         userRepresentation.setCredentials(Collections.singletonList(userPassword));
         usersResource.create(userRepresentation);
+
+        // Create a client role
+        RolesResource clientRolesResource = realmResource.clients().get(clientRepresentation.getId()).roles();
+        RoleRepresentation roleRepresentation = new RoleRepresentation();
+        roleRepresentation.setName(newRoleName);
+        clientRolesResource.create(roleRepresentation);
+
+        // Add client role mapping to an existing user
+        UserRepresentation existingUser = usersResource.search(newUsername).get(0);
+        RoleMappingResource roleMappingResource = usersResource.get(existingUser.getId()).roles();
+        RoleScopeResource roleScopeResource = roleMappingResource.clientLevel(clientRepresentation.getId());
+        RoleRepresentation existingRole = roleScopeResource.listAvailable().get(0);
+
+        roleScopeResource.add(Collections.singletonList(existingRole));
+
+        // Get user's client role mapping
+        List<RoleRepresentation> userClientRoleMapping = roleScopeResource.listEffective();
 
         keycloak.close();
     }
