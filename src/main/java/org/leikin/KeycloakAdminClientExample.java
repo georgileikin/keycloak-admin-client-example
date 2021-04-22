@@ -23,7 +23,7 @@ public class KeycloakAdminClientExample {
         String newRoleName = "demo-permission";
         String newUsername = "georgi";
         String newUserFirstName = "Georgi";
-        String newUserLastName = "Demo";
+        String newUserLastName = "Leikin";
         String newUserPassword = "admin";
         String newUserEmail = "demo@useremail.com";
 
